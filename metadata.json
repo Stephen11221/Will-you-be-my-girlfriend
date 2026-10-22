@@ -1,0 +1,6 @@
+{
+  "name": "Will You Be My Girlfriend?",
+  "description": "A cute, romantic, and playful proposal interactive quiz game with charming animations and celebrations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

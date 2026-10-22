@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Will You Be My Girlfriend? 💌</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Poppins', -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #fff1f2, #ffe4e6 50%, #fecdd3 100%);
+      color: #334155;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    h1, h2, h3 { font-family: 'Fredoka', 'Poppins', sans-serif; }
+    .handwriting { font-family: 'Caveat', cursive; }
+    
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      padding: 24px 20px;
+      margin: auto;
+      text-align: center;
+      position: relative;
+      z-index: 20;
+    }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 40px -15px rgba(244, 63, 94, 0.2);
+      border: 1px solid #ffe4e6;
+      width: 100%;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes heartbeat { 0%, 100% { transform: scale(1); } 20% { transform: scale(1.15); } 40% { transform: scale(1); } }
+    @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(244, 63, 94, 0.3); } 50% { box-shadow: 0 0 30px rgba(244, 63, 94, 0.6); } }
+
+    .floating { animation: floatSlow 4s ease-in-out infinite; }
+    .beating { animation: heartbeat 1.8s infinite; }
+    .wiggling { animation: wiggle 1s infinite; }
+    .glowing { animation: pulseGlow 2s infinite; }
+
+    .envelope-box {
+      width: 270px;
+      height: 180px;
+      background: linear-gradient(135deg, #fecdd3, #f472b6);
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 15px 30px rgba(244, 63, 94, 0.25);
+      border: 2px solid #ffffff;
+      margin: 20px auto;
+      transition: transform 0.25s ease;
+    }
+    .envelope-box:hover { transform: scale(1.05); }
+    .seal {
+      width: 60px;
+      height: 60px;
+      background: #e11d48;
+      border-radius: 50%;
+      border: 2px solid #fb7185;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+    }
+
+    .btn-option {
+      width: 100%;
+      background: #fff;
+      border: 2px solid #ffe4e6;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .btn-option:hover {
+      border-color: #f43f5e;
+      background: #fff1f2;
+      transform: translateY(-2px);
+    }
+    .btn-option.selected {
+      border-color: #f43f5e;
+      background: #ffe4e6;
+      transform: scale(1.02);
+    }
+    .opt-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #ffe4e6;
+      color: #e11d48;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      color: #fff;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 16px 36px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(244, 63, 94, 0.4);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 30;
+    }
+    .btn-no {
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .sound-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      background: #fff;
+      border: 1px solid #fecdd3;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+  <button class="sound-toggle" id="soundBtn" title="Toggle Music">🎵</button>
+
+  <!-- SCREEN 1: ENVELOPE -->
+  <div class="screen active" id="screenEnvelope">
+    <div class="floating" style="margin-bottom: 12px;">
+      <svg width="120" height="120" viewBox="0 0 200 200" fill="none">
+        <ellipse cx="100" cy="180" rx="55" ry="12" fill="#fbcfe8" />
+        <circle cx="65" cy="62" r="24" fill="#d97706" /><circle cx="65" cy="62" r="14" fill="#fed7aa" />
+        <circle cx="135" cy="62" r="24" fill="#d97706" /><circle cx="135" cy="62" r="14" fill="#fed7aa" />
+        <ellipse cx="100" cy="95" rx="52" ry="46" fill="#f59e0b" />
+        <ellipse cx="100" cy="106" rx="22" ry="16" fill="#fef3c7" />
+        <circle cx="82" cy="92" r="7" fill="#1e293b" /><circle cx="84" cy="90" r="2.5" fill="#fff" />
+        <circle cx="118" cy="92" r="7" fill="#1e293b" /><circle cx="120" cy="90" r="2.5" fill="#fff" />
+        <ellipse cx="68" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" />
+        <ellipse cx="132" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" />
+        <ellipse cx="100" cy="102" rx="6" ry="4.5" fill="#854d0e" />
+        <path d="M95 109 Q100 114 105 109" stroke="#854d0e" stroke-width="2.5" stroke-linecap="round" fill="none" />
+        <ellipse cx="100" cy="148" rx="42" ry="34" fill="#f59e0b" />
+        <ellipse cx="100" cy="148" rx="26" ry="22" fill="#fef3c7" />
+        <circle cx="70" cy="168" r="16" fill="#d97706" /><circle cx="130" cy="168" r="16" fill="#d97706" />
+        <ellipse cx="64" cy="144" rx="10" ry="8" fill="#d97706" /><ellipse cx="136" cy="144" rx="10" ry="8" fill="#d97706" />
+      </svg>
+    </div>
+    <h1 style="color: #e11d48; font-size: 28px; margin-bottom: 6px;">Will You Be My Girlfriend?</h1>
+    <p style="color: #fb7185; font-size: 15px; margin-bottom: 20px;">A special secret letter is waiting for you ✨</p>
+    
+    <div class="envelope-box" id="openEnvelopeBtn">
+      <div class="seal glowing"><span class="beating">❤️</span></div>
+    </div>
+    
+    <div style="background: rgba(255,255,255,0.85); padding: 10px 20px; border-radius: 99px; display: inline-block; font-weight: 600; color: #e11d48; font-size: 14px; margin-top: 15px; border: 1px solid #fecdd3;">
+      You have a special message 💌 - Click to open
+    </div>
+  </div>
+
+  <!-- SCREEN 2: QUIZ -->
+  <div class="screen" id="screenQuiz">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div id="heartProgress" style="font-size: 18px;">❤️❤️❤️❤️❤️</div>
+        <span id="qCountBadge" style="font-size: 12px; font-weight: 700; color: #fb7185; background: #fff1f2; padding: 4px 10px; border-radius: 99px;">Question 1 of 5</span>
+      </div>
+
+      <h2 id="qTitle" style="color: #1e293b; font-size: 20px; margin-bottom: 4px;">When did you first steal my heart?</h2>
+      <p id="qSubtitle" style="color: #fb7185; font-size: 13px; margin-bottom: 20px;">Think carefully... or maybe don't! 😉</p>
+
+      <div id="optionsContainer"></div>
+
+      <div id="quizFeedback" style="min-height: 38px; display: flex; align-items: center; justify-content: center; margin-top: 15px; font-size: 13px; font-weight: 600; color: #e11d48;"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: PROPOSAL -->
+  <div class="screen" id="screenProposal">
+    <div class="card">
+      <div class="floating" style="margin-bottom: 8px;">
+        <svg width="130" height="130" viewBox="0 0 200 200" fill="none">
+          <ellipse cx="100" cy="180" rx="55" ry="12" fill="#fbcfe8" />
+          <circle cx="65" cy="62" r="24" fill="#d97706" /><circle cx="65" cy="62" r="14" fill="#fed7aa" />
+          <circle cx="135" cy="62" r="24" fill="#d97706" /><circle cx="135" cy="62" r="14" fill="#fed7aa" />
+          <ellipse cx="100" cy="95" rx="52" ry="46" fill="#f59e0b" />
+          <ellipse cx="100" cy="106" rx="22" ry="16" fill="#fef3c7" />
+          <circle cx="82" cy="90" r="9" fill="#1e293b" /><circle cx="85" cy="88" r="3.5" fill="#fff" /><circle cx="79" cy="94" r="2" fill="#fff" />
+          <circle cx="118" cy="90" r="9" fill="#1e293b" /><circle cx="121" cy="88" r="3.5" fill="#fff" /><circle cx="115" cy="94" r="2" fill="#fff" />
+          <ellipse cx="68" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" />
+          <ellipse cx="132" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" />
+          <ellipse cx="100" cy="102" rx="6" ry="4.5" fill="#854d0e" />
+          <path d="M95 109 Q100 114 105 109" stroke="#854d0e" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          <ellipse cx="100" cy="148" rx="42" ry="34" fill="#f59e0b" /><ellipse cx="100" cy="148" rx="26" ry="22" fill="#fef3c7" />
+          <circle cx="70" cy="168" r="16" fill="#d97706" /><circle cx="130" cy="168" r="16" fill="#d97706" />
+          <path d="M100 162 C70 142 55 125 55 110 C55 95 68 85 82 85 C91 85 97 90 100 95 C103 90 109 85 118 85 C132 85 145 95 145 110 C145 125 130 142 100 162 Z" fill="#f43f5e" />
+          <ellipse cx="72" cy="132" rx="10" ry="8" fill="#d97706" /><ellipse cx="128" cy="132" rx="10" ry="8" fill="#d97706" />
+        </svg>
+      </div>
+
+      <h1 style="color: #e11d48; font-size: 32px; margin-bottom: 8px;">Will you be my girlfriend? 🥺❤️</h1>
+      <p style="color: #fb7185; font-size: 14px; margin-bottom: 20px;">You make every single day a whole lot sweeter and brighter.</p>
+
+      <div id="noToast" style="min-height: 40px; margin-bottom: 16px; font-weight: 700; color: #e11d48;"></div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 10px;">
+        <button class="btn-yes glowing" id="btnYes"><span>💖</span> <span id="yesText">YES! 💖</span></button>
+        <button class="btn-no" id="btnNo">No 🙈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: CELEBRATION -->
+  <div class="screen" id="screenCelebration">
+    <div class="card">
+      <div style="background: #ffe4e6; color: #e11d48; display: inline-block; padding: 6px 18px; border-radius: 99px; font-weight: 700; font-size: 13px; margin-bottom: 15px;">
+        ✨ BEST DAY EVER ✨
+      </div>
+
+      <div class="floating" style="margin-bottom: 8px;">
+        <svg width="130" height="130" viewBox="0 0 200 200" fill="none">
+          <ellipse cx="100" cy="180" rx="55" ry="12" fill="#fbcfe8" />
+          <polygon points="100,28 85,58 115,58" fill="#ec4899" /><circle cx="100" cy="27" r="5" fill="#facc15" />
+          <circle cx="65" cy="62" r="24" fill="#d97706" /><circle cx="65" cy="62" r="14" fill="#fed7aa" />
+          <circle cx="135" cy="62" r="24" fill="#d97706" /><circle cx="135" cy="62" r="14" fill="#fed7aa" />
+          <ellipse cx="100" cy="95" rx="52" ry="46" fill="#f59e0b" /><ellipse cx="100" cy="106" rx="22" ry="16" fill="#fef3c7" />
+          <path d="M74 92 C78 86 86 86 90 92" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round" fill="none" />
+          <path d="M110 92 C114 86 122 86 126 92" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round" fill="none" />
+          <ellipse cx="68" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" /><ellipse cx="132" cy="104" rx="10" ry="6" fill="#f43f5e" fill-opacity="0.45" />
+          <ellipse cx="100" cy="102" rx="6" ry="4.5" fill="#854d0e" />
+          <path d="M94 109 Q100 118 106 109" stroke="#854d0e" stroke-width="2.5" stroke-linecap="round" fill="#f43f5e" />
+          <ellipse cx="100" cy="148" rx="42" ry="34" fill="#f59e0b" /><ellipse cx="100" cy="148" rx="26" ry="22" fill="#fef3c7" />
+          <circle cx="70" cy="168" r="16" fill="#d97706" /><circle cx="130" cy="168" r="16" fill="#d97706" />
+          <ellipse cx="56" cy="120" rx="12" ry="8" fill="#d97706" transform="rotate(-40, 56, 120)" />
+          <ellipse cx="144" cy="120" rx="12" ry="8" fill="#d97706" transform="rotate(40, 144, 120)" />
+        </svg>
+      </div>
+
+      <h1 style="color: #e11d48; font-size: 36px; margin-bottom: 8px;">She said YES!!! 🎉💖</h1>
+      <p style="color: #334155; font-size: 16px; font-weight: 700; margin-bottom: 20px;">
+        "I knew you'd say yes! I love you! ❤️ You are officially my girlfriend now!"
+      </p>
+
+      <div style="background: #fff1f2; border: 2px dashed #fb7185; border-radius: 20px; padding: 20px; text-align: left; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #fecdd3; padding-bottom: 8px; margin-bottom: 12px;">
+          <div>
+            <div style="font-size: 10px; font-weight: 700; color: #fb7185; text-transform: uppercase;">Official Declaration</div>
+            <div style="font-size: 17px; font-weight: 700; color: #be123c; font-family: 'Fredoka', sans-serif;">Certificate of True Love 📜💖</div>
+          </div>
+          <span style="font-size: 24px;">💍</span>
+        </div>
+        <div style="font-size: 13px; line-height: 1.8; color: #475569;">
+          <div><strong style="color: #e11d48;">Girlfriend:</strong> My Cutest Partner in Crime 🥰</div>
+          <div><strong style="color: #e11d48;">Official Date:</strong> <span id="certDate">Today</span></div>
+          <div><strong style="color: #e11d48;">Terms:</strong> Unlimited cuddles, sweet forehead kisses & laughs</div>
+          <div><strong style="color: #e11d48;">Status:</strong> ❤️ Officially Taken Forever</div>
+        </div>
+        <div style="margin-top: 14px; padding-top: 8px; border-top: 1px solid #fecdd3; display: flex; justify-content: space-between; align-items: center;">
+          <span class="handwriting" style="font-size: 20px; color: #e11d48; font-weight: 700;">Forever & always yours ❤️</span>
+          <span style="background: #fff; border: 1px solid #f43f5e; color: #e11d48; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px;">★ 100% VERIFIED ★</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn-yes" id="btnShareScreenshot" style="font-size: 16px; padding: 14px 24px; justify-content: center;">
+          <span>📸</span> Send me a screenshot 😘
+        </button>
+        <button id="btnRestart" style="background: none; border: none; color: #e11d48; font-weight: 600; font-size: 14px; text-decoration: underline; cursor: pointer; padding: 8px;">
+          Replay Story 🔄
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let audioCtx = null;
+    let isMuted = false;
+    let musicInterval = null;
+    let musicStep = 0;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playHoverSound() {
+      if (isMuted || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+        g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } catch(e){}
+    }
+
+    function playPopSound() {
+      initAudio();
+      if (isMuted || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(850, audioCtx.currentTime + 0.07);
+        g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } catch(e){}
+    }
+
+    function playFanfare() {
+      initAudio();
+      if (isMuted || !audioCtx) return;
+      try {
+        const notes = [523.25, 659.25, 783.99, 1046.5, 880, 1046.5];
+        notes.forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.12);
+          g.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.12);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.12 + 0.35);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + i * 0.12);
+          osc.stop(audioCtx.currentTime + i * 0.12 + 0.4);
+        });
+      } catch(e){}
+    }
+
+    function startRomanticMusic() {
+      initAudio();
+      if (musicInterval) return;
+      const chords = [
+        [349.23, 440.0, 523.25, 659.25],
+        [392.00, 493.88, 587.33, 659.25],
+        [329.63, 392.00, 493.88, 587.33],
+        [440.00, 523.25, 659.25, 783.99]
+      ];
+      musicInterval = setInterval(() => {
+        if (isMuted || !audioCtx) return;
+        const chord = chords[Math.floor(musicStep / 4) % chords.length];
+        const freq = chord[musicStep % 4];
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.035, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+        musicStep++;
+      }, 280);
+    }
+
+    document.getElementById('soundBtn').onclick = () => {
+      initAudio();
+      isMuted = !isMuted;
+      document.getElementById('soundBtn').innerText = isMuted ? '🔇' : '🎵';
+      if (!isMuted && !musicInterval) startRomanticMusic();
+    };
+
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    window.onresize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+
+    let particles = [];
+    let isCelebration = false;
+    const colors = ['#f43f5e', '#fb7185', '#ec4899', '#f472b6', '#fda4af', '#fbcfe8', '#fbbf24', '#ffffff'];
+
+    function spawnParticle(burst) {
+      const isHeart = Math.random() > 0.4;
+      if (burst || isCelebration) {
+        const startX = burst ? width/2 : Math.random() * width;
+        const startY = burst ? height * 0.55 : Math.random() * height * 0.2;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = burst ? Math.random() * 12 + 6 : Math.random() * 4 + 2;
+        particles.push({
+          x: startX, y: startY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - (burst ? 4 : 0),
+          size: Math.random() * 14 + 10,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.2,
+          alpha: 1,
+          shape: isHeart ? 'heart' : 'circle'
+        });
+      } else {
+        particles.push({
+          x: Math.random() * width, y: height + 20,
+          vx: (Math.random() - 0.5) * 1.2,
+          vy: -(Math.random() * 1.5 + 0.8),
+          size: Math.random() * 10 + 8,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.05,
+          alpha: Math.random() * 0.6 + 0.3,
+          shape: 'heart'
+        });
+      }
+    }
+
+    function drawHeart(c, x, y, size) {
+      c.save();
+      c.translate(x, y);
+      c.beginPath();
+      const topH = size * 0.3;
+      c.moveTo(0, topH);
+      c.bezierCurveTo(0, 0, -size/2, 0, -size/2, topH);
+      c.bezierCurveTo(-size/2, (size+topH)/2, 0, size, 0, size * 1.2);
+      c.bezierCurveTo(0, size, size/2, (size+topH)/2, size/2, topH);
+      c.bezierCurveTo(size/2, 0, 0, 0, 0, topH);
+      c.fill();
+      c.restore();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, width, height);
+      if (particles.length < (isCelebration ? 120 : 25)) spawnParticle(false);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.rotation += p.rotSpeed;
+        if (isCelebration) { p.vy += 0.15; p.vx *= 0.985; p.alpha -= 0.005; }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        if (p.shape === 'heart') drawHeart(ctx, 0, 0, p.size);
+        else { ctx.beginPath(); ctx.arc(0, 0, p.size/2, 0, Math.PI*2); ctx.fill(); }
+        ctx.restore();
+        if (p.alpha <= 0 || p.y < -50 || (isCelebration && p.y > height + 50)) particles.splice(i, 1);
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    const questions = [
+      {
+        q: "When did you first steal my heart?",
+        sub: "Think carefully... or maybe don't! 😉",
+        opts: [
+          { l: "A", t: "The very first second I saw your smile 😊", r: "Bingo! That smile stopped time completely! ⏳✨" },
+          { l: "B", t: "The moment we had our first deep talk 💬", r: "Yes! I could listen to you forever. 🎧❤️" },
+          { l: "C", t: "Trick question: you've always owned my heart ✨", r: "Soulmates confirmed! 100% correct! 💫" }
+        ]
+      },
+      {
+        q: "What's your true superpower?",
+        sub: "Marvel wishes they had you 🦸‍♀️",
+        opts: [
+          { l: "A", t: "Making me smile on any bad day ☀️", r: "Instant sunshine therapy! 🌻" },
+          { l: "B", t: "Being ridiculously cute 24/7 🌸", r: "Honestly how are you this cute?! 🥰" },
+          { l: "C", t: "All of the above (and a million more things) 💖", r: "Accurate! You're out of this world! 🚀🌟" }
+        ]
+      },
+      {
+        q: "Who is the most beautiful girl in the world?",
+        sub: "A scientific inquiry with zero debate 🔬",
+        opts: [
+          { l: "A", t: "You 🥰", r: "Without a doubt in the universe! 🌍" },
+          { l: "B", t: "You, obviously 👑", r: "The crown belongs to you, queen! 👑✨" },
+          { l: "C", t: "Definitely You, 10,000% 🌟", r: "Fact check: Universally agreed! 💖" }
+        ]
+      },
+      {
+        q: "What makes my day instantly better?",
+        sub: "The cure for anything 💊",
+        opts: [
+          { l: "A", t: "Seeing your cute text pop up 📱", r: "My phone lights up and my heart skips a beat! 💓" },
+          { l: "B", t: "Hearing your sweet voice and laugh 🎶", r: "Better than any song on repeat! 🎵" },
+          { l: "C", t: "Seeing your gorgeous smile ✨", r: "Gets me every single time! 🫠" }
+        ]
+      },
+      {
+        q: "Are you ready for the final question? 🥺",
+        sub: "No turning back now!",
+        opts: [
+          { l: "A", t: "Yes, born ready! 🚀", r: "That's the spirit! Here it comes! 💓" },
+          { l: "B", t: "My heart is fluttering so fast! 💓", r: "Mine too! Let's do this! 🥰" },
+          { l: "C", t: "Ask me already, cutie! 💖", r: "Okay, holding my breath... 💌" }
+        ]
+      }
+    ];
+
+    let currentQ = 0;
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    document.getElementById('openEnvelopeBtn').onclick = () => {
+      initAudio();
+      playPopSound();
+      startRomanticMusic();
+      for(let i=0; i<50; i++) spawnParticle(true);
+      setTimeout(() => {
+        showScreen('screenQuiz');
+        loadQuestion(0);
+      }, 800);
+    };
+
+    function loadQuestion(idx) {
+      currentQ = idx;
+      const data = questions[idx];
+      document.getElementById('qTitle').innerText = data.q;
+      document.getElementById('qSubtitle').innerText = data.sub;
+      document.getElementById('qCountBadge').innerText = \`Question \${idx+1} of \${questions.length}\`;
+      
+      const hearts = ['❤️','❤️','❤️','❤️','❤️'].map((h, i) => i <= idx ? '❤️' : '🤍').join('');
+      document.getElementById('heartProgress').innerText = hearts;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      document.getElementById('quizFeedback').innerText = '';
+
+      data.opts.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerHTML = \`<span class="opt-badge">\${opt.l}</span><span>\${opt.t}</span>\`;
+        btn.onmouseenter = playHoverSound;
+        btn.onclick = () => {
+          playPopSound();
+          btn.classList.add('selected');
+          document.getElementById('quizFeedback').innerText = opt.r;
+          setTimeout(() => {
+            if (currentQ < questions.length - 1) {
+              loadQuestion(currentQ + 1);
+            } else {
+              showScreen('screenProposal');
+            }
+          }, 900);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    let evasionCount = 0;
+    const funnyMessages = [
+      "Oops, try again! 🤭",
+      "No is not an option 😜",
+      "You meant Yes right? 😏",
+      "Nice try, cutie! 🏃‍♂️💨",
+      "The 'No' button is allergic to your finger 🥺",
+      "Are you sure? Try reading the big button! 💖",
+      "Error 404: 'No' button disconnected! 🚀",
+      "Destiny has already decided! ✨"
+    ];
+
+    const btnNo = document.getElementById('btnNo');
+    const btnYes = document.getElementById('btnYes');
+    const noToast = document.getElementById('noToast');
+    const yesText = document.getElementById('yesText');
+
+    function moveNoButton(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      playPopSound();
+      evasionCount++;
+
+      noToast.innerText = funnyMessages[(evasionCount - 1) % funnyMessages.length];
+
+      const scale = Math.min(2.2, 1 + evasionCount * 0.14);
+      btnYes.style.transform = \`scale(\${scale})\`;
+
+      if (evasionCount > 3) yesText.innerText = "YES OF COURSE!! 💖";
+      if (evasionCount > 6) yesText.innerText = "YES A THOUSAND TIMES! 💍✨";
+
+      const padding = 20;
+      const maxW = window.innerWidth - 120 - padding;
+      const maxH = window.innerHeight - 50 - padding;
+      const x = Math.max(padding, Math.floor(Math.random() * maxW));
+      const y = Math.max(padding, Math.floor(Math.random() * maxH));
+
+      btnNo.style.position = 'fixed';
+      btnNo.style.left = x + 'px';
+      btnNo.style.top = y + 'px';
+      btnNo.style.zIndex = '9999';
+    }
+
+    btnNo.onmouseenter = moveNoButton;
+    btnNo.ontouchstart = moveNoButton;
+    btnNo.onpointerdown = moveNoButton;
+    btnNo.onclick = moveNoButton;
+
+    btnYes.onclick = () => {
+      initAudio();
+      playFanfare();
+      isCelebration = true;
+      for (let i = 0; i < 90; i++) spawnParticle(true);
+
+      document.getElementById('certDate').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      showScreen('screenCelebration');
+    };
+
+    document.getElementById('btnShareScreenshot').onclick = async () => {
+      playPopSound();
+      const text = "I said YES to being your girlfriend! 🥺❤️ Officially official! Sending you a screenshot right now! 😘💍";
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "She said YES! 💖", text: text, url: window.location.href });
+          return;
+        } catch(e){}
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Loving message copied to clipboard! Ready to paste & send! 💌");
+      } catch(e) {
+        alert("Take a screenshot of this cute screen and send it to your love! 😘");
+      }
+    };
+
+    document.getElementById('btnRestart').onclick = () => {
+      playPopSound();
+      isCelebration = false;
+      evasionCount = 0;
+      btnYes.style.transform = 'scale(1)';
+      yesText.innerText = "YES! 💖";
+      btnNo.style.position = 'relative';
+      btnNo.style.left = 'auto';
+      btnNo.style.top = 'auto';
+      showScreen('screenEnvelope');
+    };
+  </script>
+</body>
+</html>
